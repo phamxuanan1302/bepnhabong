@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Giỏ hàng đơn giản</title>
+  <title>Giỏ hàng Online</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -13,65 +13,24 @@
   </style>
 </head>
 <body>
-  <h2>Giỏ hàng đơn giản</h2>
-  <form id="cartForm">
+  <h2>Giỏ hàng Online</h2>
+  <form id="orderForm">
     <table>
       <tr>
         <th>Sản phẩm</th>
         <th>Giá (VNĐ)</th>
         <th>Số lượng</th>
       </tr>
-      <!-- 10 sản phẩm -->
-      <tr>
-        <td>Sản phẩm 1</td>
-        <td>10000</td>
-        <td><input type="number" name="sp1" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 2</td>
-        <td>20000</td>
-        <td><input type="number" name="sp2" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 3</td>
-        <td>15000</td>
-        <td><input type="number" name="sp3" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 4</td>
-        <td>25000</td>
-        <td><input type="number" name="sp4" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 5</td>
-        <td>30000</td>
-        <td><input type="number" name="sp5" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 6</td>
-        <td>12000</td>
-        <td><input type="number" name="sp6" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 7</td>
-        <td>18000</td>
-        <td><input type="number" name="sp7" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 8</td>
-        <td>22000</td>
-        <td><input type="number" name="sp8" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 9</td>
-        <td>27000</td>
-        <td><input type="number" name="sp9" value="0" min="0"></td>
-      </tr>
-      <tr>
-        <td>Sản phẩm 10</td>
-        <td>35000</td>
-        <td><input type="number" name="sp10" value="0" min="0"></td>
-      </tr>
+      <tr><td>Sản phẩm 1</td><td>10000</td><td><input type="number" name="sp1" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 2</td><td>20000</td><td><input type="number" name="sp2" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 3</td><td>15000</td><td><input type="number" name="sp3" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 4</td><td>25000</td><td><input type="number" name="sp4" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 5</td><td>30000</td><td><input type="number" name="sp5" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 6</td><td>12000</td><td><input type="number" name="sp6" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 7</td><td>18000</td><td><input type="number" name="sp7" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 8</td><td>22000</td><td><input type="number" name="sp8" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 9</td><td>27000</td><td><input type="number" name="sp9" value="0" min="0"></td></tr>
+      <tr><td>Sản phẩm 10</td><td>35000</td><td><input type="number" name="sp10" value="0" min="0"></td></tr>
     </table>
 
     <p class="total">Tổng tiền: <span id="total">0</span> VNĐ</p>
@@ -97,14 +56,19 @@
       });
       totalEl.textContent = total.toLocaleString();
     }
+    inputs.forEach(input => input.addEventListener('input', updateTotal));
 
-    inputs.forEach(input => {
-      input.addEventListener('input', updateTotal);
-    });
-
-    document.getElementById('cartForm').addEventListener('submit', function(e){
+    document.getElementById('orderForm').addEventListener('submit', function(e){
       e.preventDefault();
-      alert("Đơn hàng đã được gửi! Tổng tiền: " + totalEl.textContent + " VNĐ");
+      const formData = new FormData(this);
+
+      fetch("https://script.google.com/macros/s/AKfycbzELUMw2mDv6U2Td5Vr7EnfN5DKYn_-vOc1GLagDwAizoQpCyaAJqRxoJJs_kWWIYoM/exec", { // ⚠️ URL Web App sẽ tự động được gán khi chạy trên Apps Script
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.text())
+      .then(txt => alert(txt))
+      .catch(err => alert("Có lỗi xảy ra: " + err));
     });
   </script>
 </body>
