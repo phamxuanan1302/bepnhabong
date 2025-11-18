@@ -302,58 +302,353 @@ function changeQty(id, delta) {
     }
 }
 
-function submitOrder() {
-    const name = document.getElementById("name").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const address = document.getElementById("address").value.trim();
-    const note = document.getElementById("note").value.trim();
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bếp Nhà Bông - Đặt hàng online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --pink: #FFB6C1;
+            --hotpink: #FF69B4;
+            --lightpink: #FFF0F5;
+            --text: #D81B60;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            /* Đã thay đổi font chính thành Montserrat */
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #FDF, #FFF0F5);
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,182,193,0.05) 35px, rgba(255,182,193,0.05) 70px),
+                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(255,182,193,0.05) 35px, rgba(255,182,193,0.05) 70px);
+            min-height: 100vh;
+            padding: 15px 10px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
 
-    if (!name || !phone || !address || cart.length === 0) {
-        alert("Vui lòng điền đầy đủ thông tin và chọn món nhé!");
-        return;
-    }
+        /* Header */
+        header { text-align: center; margin-bottom: 30px; }
+        .logo img { width: 90px; margin-bottom: 10px; }
+        h1 {
+            /* Đã thay đổi font thành Pacifico */
+            font-family: 'Pacifico', cursive;
+            font-size: 3.2em;
+            color: var(--hotpink);
+            text-shadow: 3px 3px 0px #ffebee;
+        }
+        .subtitle {
+            font-size: 1.5em;
+            color: var(--text);
+            margin-top: -10px;
+            font-weight: 600;
+        }
 
-    // TẠO MẢNG CHỨA TỪNG SẢN PHẨM RIÊNG BIỆT
-    const orderDetails = cart.map(item => ({
-        name: item.name,
-        qty: item.qty,
-        price: item.price,
-        lineTotal: item.price * item.qty
-    }));
-    
-    // TẠO TEXT CHỈ CHỨA SẢN PHẨM VÀ GIÁ
-    let itemsText = "";
-    let total = 0;
-    cart.forEach(item => {
-        const line = item.price * item.qty;
-        total += line;
-        // Bỏ dòng "ĐƠN HÀNG TỪ BẾP NHÀ BÔNG" và "TỔNG TIỀN"
-        itemsText += `${item.name} × ${item.qty} = ${line.toLocaleString()}đ\n`;
-    });
+        /* Sản phẩm */
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .product {
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255,105,180,0.15);
+            text-align: center;
+            padding: 20px;
+            transition: 0.3s;
+        }
+        .product:hover { transform: translateY(-10px); }
+        .product img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 8px solid var(--pink);
+            margin-bottom: 15px;
+        }
+        .product h3 {
+            /* Đã thay đổi font thành Pacifico */
+            font-family: 'Pacifico', cursive;
+            font-size: 1.7em;
+            color: var(--text);
+            margin: 10px 0;
+        }
+        .variants {
+            background: var(--lightpink);
+            padding: 12px;
+            border-radius: 20px;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        .price {
+            font-weight: 700;
+            font-size: 1.4em;
+            color: var(--hotpink);
+        }
+        .add-btn {
+            margin-top: 15px;
+            background: linear-gradient(45deg, #FF69B4, #FF1493);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1em;
+        }
+        .add-btn:hover { transform: scale(1.05); }
 
-    // CHÚ Ý: ĐÃ THAY ĐỔI CẤU TRÚC GỬI DỮ LIỆU
-    const data = {
-        timestamp: new Date().toLocaleString("vi-VN"),
-        name, phone, address, note,
-        // items: itemsText, // Giữ lại itemsText nếu bạn cần 1 cột duy nhất chứa hết thông tin món
-        products: orderDetails, // Gửi chi tiết từng sản phẩm
-        total: total.toLocaleString() + "đ"
-    };
+        /* Giỏ hàng & Form */
+        .cart-form {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(255,105,180,0.2);
+        }
+        .cart-title {
+            /* Đã thay đổi font thành Pacifico */
+            font-family: 'Pacifico', cursive;
+            font-size: 2.2em;
+            color: var(--hotpink);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            background: var(--lightpink);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+        .cart-item img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid var(--pink);
+            margin-right: 15px;
+        }
+        .quantity {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            margin-left: auto;
+        }
+        .quantity button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--hotpink);
+            color: white;
+            border-radius: 50%;
+            font-size: 1.3em;
+            cursor: pointer; /* Thêm cursor pointer */
+        }
+        .total {
+            text-align: right;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--text);
+            margin: 25px 0;
+        }
 
-    fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data)
-    }).finally(() => {
-        document.getElementById("successMsg").style.display = "block";
-        cart = [];
-        updateCart();
-        document.querySelectorAll("input, textarea").forEach(el => el.value = "");
-        // Tắt thông báo sau 5 giây
-        setTimeout(() => document.getElementById("successMsg").style.display = "none", 5000);
-    });
+        /* Form đặt hàng */
+        .form-group { margin-bottom: 18px; }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid var(--pink);
+            border-radius: 20px;
+            font-size: 1.1em;
+            /* Đã thay đổi font thành Montserrat */
+            font-family: 'Montserrat', sans-serif;
+        }
+        .submit-btn {
+            background: linear-gradient(45deg, #FF1493, #FF69B4);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 30px;
+            font-size: 1.5em;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .success { 
+            background: #E8F5E8; 
+            color: #2e7d32; 
+            padding: 20px; 
+            border-radius: 20px; 
+            text-align: center; 
+            font-size: 1.3em; 
+            display: none; 
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <div class="logo">
+            <img src="https://i.ibb.co/6cyRQnNB/logo.png" alt="logo">
+
+        </div>
+        <h1>Bếp Nhà Bông</h1>
+        <p class="subtitle">Sữa chua - Bánh flan - Panna cotta nhà làm</p>
+    </header>
+
+    <div class="products" id="productList"></div>
+
+    <div class="cart-form">
+        <h2 class="cart-title"> Giỏ hàng của bạn</h2>
+        <div id="cartItems"></div>
+        <div class="total">Tổng tiền: <span id="totalPrice">0</span>đ</div>
+
+        <h2 class="cart-title" style="margin-top:40px;"> Thông tin nhận hàng</h2>
+        <div class="form-group"><input type="text" id="name" placeholder="Họ và tên" required></div>
+        <div class="form-group"><input type="text" id="phone" placeholder="Số điện thoại" required></div>
+        <div class="form-group"><input type="text" id="address" placeholder="Địa chỉ giao hàng (quận/huyện, phường...)" required></div>
+        <div class="form-group"><textarea id="note" rows="3" placeholder="Ghi chú thêm (ví dụ: ít đường, giao buổi chiều...)"></textarea></div>
+
+        <button class="submit-btn" onclick="submitOrder()">GỬI ĐƠN NGAY</button>
+        <div class="success" id="successMsg">
+            Đơn hàng đã gửi thành công!<br>Shop sẽ liên lạc với bạn trong 5-10 phút nha
+        </div>
+    </div>
+</div>
+
+<script>
+// THAY LINK WEB APP CỦA BẠN VÀO ĐÂY
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxKdPm0Uvkck1zQCrkluCd5cJuDxfYv2fX33KOIHRrrA3LNesg1vtWvLbo_tUK1PtcV7Q/exec";
+
+const products = [
+    { id:1, name:"Sữa chua truyền thống", price:10000, img:"https://i.imgur.com/2XbYk8L.jpg" },
+    { id:2, name:"Sữa chua phô mai", price:13000, img:"https://i.imgur.com/2XbYk8L.jpg" },
+    { id:3, name:"Sữa chua phô mai đặc biệt", price:15000, img:"https://i.imgur.com/2XbYk8L.jpg" },
+    { id:4, name:"Sữa chua phô mai cam", price:15000, img:"https://i.imgur.com/2XbYk8L.jpg" },
+    { id:5, name:"Bánh flan lớn", price:15000, img:"https://i.imgur.com/3qR9pLm.jpg" },
+    { id:6, name:"Bánh flan nhỏ", price:8000, img:"https://i.imgur.com/3qR9pLm.jpg" },
+    { id:7, name:"Panna cotta dâu tây", price:16000, img:"https://i.imgur.com/8vWqK8j.jpg" },
+    { id:8, name:"Panna cotta chanh dây", price:16000, img:"https://i.imgur.com/8vWqK8j.jpg" },
+    { id:9, name:"Panna cotta xoài", price:16000, img:"https://i.imgur.com/8vWqK8j.jpg" },
+    { id:10,name:"Panna cotta phúc bồn tử", price:16000, img:"https://i.imgur.com/8vWqK8j.jpg" }
+];
+
+let cart = [];
+
+const productList = document.getElementById("productList");
+products.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "product";
+    div.innerHTML = `
+        <img src="${p.img}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <div class="price">${p.price.toLocaleString()}đ</div>
+        <button class="add-btn" onclick="addToCart(${p.id})"> Thêm vào giỏ</button>
+    `;
+    productList.appendChild(div);
+});
+
+function addToCart(id) {
+    const item = products.find(p => p.id === id);
+    const exist = cart.find(x => x.id === id);
+    if (exist) exist.qty++;
+    else cart.push({...item, qty:1});
+    updateCart();
 }
+
+function updateCart() {
+    const container = document.getElementById("cartItems");
+    container.innerHTML = "";
+    let total = 0;
+
+    cart.forEach(item => {
+        total += item.price * item.qty;
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `
+            <img src="${item.img}" alt="${item.name}">
+            <div style="flex:1;">
+                <strong>${item.name}</strong><br>
+                ${item.price.toLocaleString()}đ
+            </div>
+            <div class="quantity">
+                <button onclick="changeQty(${item.id},-1)">-</button>
+                <span>${item.qty}</span>
+                <button onclick="changeQty(${item.id},1)">+</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    document.getElementById("totalPrice").textContent = total.toLocaleString();
+}
+
+function changeQty(id, delta) {
+    const item = cart.find(x => x.id === id);
+    if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) cart = cart.filter(x => x.id !== id);
+        updateCart();
+    }
+}
+
+function submitOrder() {
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const note = document.getElementById("note").value.trim();
+
+  if (!name || !phone || !address || cart.length === 0) {
+    alert("Vui lòng điền đầy đủ thông tin và chọn món nhé!");
+    return;
+  }
+
+  // Tạo mảng chi tiết từng món
+  const itemsArray = cart.map(item => ({
+    name: item.name,
+    qty: item.qty,
+    price: item.price
+  }));
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  const data = {
+    timestamp: new Date().toLocaleString("vi-VN"),
+    name, phone, address, note,
+    total: total.toLocaleString() + "đ",
+    itemsArray: itemsArray   // ← Quan trọng! Đây là dữ liệu mới
+  };
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  }).finally(() => {
+    document.getElementById("successMsg").style.display = "block";
+    cart = [];
+    updateCart();
+    document.querySelectorAll("input, textarea").forEach(el => el.value = "");
+    setTimeout(() => document.getElementById("successMsg").style.display = "none", 8000);
+  });
+}</script>
+</body>
+</html>
 </script>
 </body>
 </html>
+
