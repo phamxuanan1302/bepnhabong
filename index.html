@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bếp Nhà Bông - Đặt hàng online</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-  :root{--pink:#FFB6C1;--hotpink:#FF69B4;--lightpink:#FFF0F5;--text:#D81B60;}
+:root{--pink:#FFB6C1;--hotpink:#FF69B4;--lightpink:#FFF0F5;--text:#D81B60;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'Montserrat',sans-serif;background:linear-gradient(135deg,#fdf,#fff0f5);background-image:repeating-linear-gradient(45deg,transparent,transparent 35px,rgba(255,182,193,.05) 35px,rgba(255,182,193,.05) 70px),repeating-linear-gradient(-45deg,transparent,transparent 35px,rgba(255,182,193,.05) 35px,rgba(255,182,193,.05) 70px);min-height:100vh;padding:15px 10px;color:#333;}
   .container{max-width:1000px;margin:0 auto;text-align:center;}
@@ -39,10 +38,9 @@
 </style>
 </head>
 <body>
-
 <div class="container">
   <div class="logo">
-    <img src="https://i.ibb.co/6cYQRnB/logo-bep-nha-bong.png" alt="Bếp Nhà Bông">
+    <img src="https://i.ibb.co/6cYQRnB/logo.png" alt="Bếp Nhà Bông">
   </div>
   <h1>Bếp Nhà Bông</h1>
   <p class="subtitle">Sữa chua · Bánh flan · Panna cotta nhà làm với tình yêu</p>
@@ -149,43 +147,46 @@ function validatePhone(phone) {
   return regex.test(phone);
 }
 
+
 function submitOrder() {
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
   const address = document.getElementById("address").value.trim();
   const note = document.getElementById("note").value.trim();
 
-  // Kiểm tra các trường bắt buộc
-  if (!name || !phone || !address || cart.length === 0) {
-    alert("Vui lòng điền đầy đủ thông tin và chọn món ăn nhé!");
+  if (!name || !phone || !address || cart.length===0) {
+    alert("Vui lòng điền đủ thông tin và chọn món nhé!");
     return;
   }
-
-  // KIỂM TRA SỐ ĐIỆN THOẠI NGHIÊM NGẶT
-  if (!validatePhone(phone)) {
-    document.getElementById("phoneError").style.display = "block";
-    document.getElementById("phone").style.borderColor = "#e74c3c";
+  if (!/^0[3|5|7|8|9][0-9]{8}$/.test(phone)) {
+    document.getElementById("phoneError").style.display="block";
     return;
-  } else {
-    document.getElementById("phoneError").style.display = "none";
-    document.getElementById("phone").style.borderColor = "#FFB6C1";
-  }
+  } else document.getElementById("phoneError").style.display="none";
 
-  const itemsArray = cart.map(i => ({name:i.name, qty:i.qty, price:i.price}));
+  const itemsArray = cart.map(i=>({name:i.name,qty:i.qty,price:i.price}));
   const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
 
   const data = {
     timestamp: new Date().toLocaleString("vi-VN"),
     name, phone, address, note,
-    total: total.toLocaleString() + "đ",
+    total: total.toLocaleString()+"đ",
     itemsArray
   };
 
+  // Gửi đơn + nhận link in đơn
   fetch(WEB_APP_URL, {
-    method:"POST", mode:"no-cors",
+    method:"POST",
+    mode:"no-cors",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(data)
-  }).finally(()=>{
+  })
+  .then(()=>fetch(WEB_APP_URL))           // gọi GET để lấy link in
+  .then(r=>r.text())
+  .then(url=>{
+    if(url.startsWith("http")){
+      const win = window.open(url,"_blank");
+      setTimeout(()=>win.print(),2500);   // tự động hiện hộp thoại in
+    }
     document.getElementById("successMsg").style.display="block";
     cart=[]; updateCart();
     document.querySelectorAll("input,textarea").forEach(e=>e.value="");
