@@ -64,63 +64,8 @@ h1{font-family:'Pacifico',cursive;font-size:3.8em;color:var(--hotpink);text-shad
 
     <button class="submit-btn" onclick="submitOrder()">GỬI ĐƠN NGAY</button>
    <div class="success" id="successMsg">
-  <strong>Đơn hàng đã gửi thành công!</strong><br>
-  Shop sẽ gọi xác nhận trong 5-10 phút nha
-  <br><br>
-  <button onclick="openPrintWindow()" style="background:#FF1493;color:white;padding:15px 40px;border:none;border-radius:50px;font-size:1.4em;font-weight:bold;cursor:pointer;box-shadow:0 8px 20px rgba(255,20,147,.4);">
-    IN ĐƠN HÀNG NGAY
-  </button>
+  Đơn hàng đã gửi thành công!<br>Shop sẽ gọi xác nhận trong 5-10 phút nha
 </div>
-
-<!-- Lưu dữ liệu đơn hàng mới nhất để in lại -->
-<script>
-// Biến toàn cục lưu đơn hàng vừa gửi
-let latestOrderData = null;
-
-function submitOrder() {
-  // ... (giữ nguyên toàn bộ code cũ của bạn đến phần fetch POST)
-
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
-  })
-  .then(() => {
-    // Lưu lại đơn hàng để in
-    latestOrderData = data;
-    
-    // Tự động mở in đơn
-    openPrintWindow();
-    
-    // Hiển thị thông báo thành công
-    document.getElementById("successMsg").style.display = "block";
-    cart = []; 
-    updateCart();
-    document.querySelectorAll("input,textarea").forEach(e => e.value = "");
-    setTimeout(() => document.getElementById("successMsg").style.display = "none", 15000);
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Gửi đơn thành công nhưng có lỗi nhỏ, bạn vẫn có thể bấm nút IN ĐƠN HÀNG bên dưới nhé!");
-    document.getElementById("successMsg").style.display = "block";
-  });
-}
-
-// Hàm mở trang in đơn (dùng được mọi lúc)
-function openPrintWindow() {
-  if (!latestOrderData) {
-    alert("Chưa có đơn hàng nào để in!");
-    return;
-  }
-  
-  const printUrl = WEB_APP_URL + "?print&data=" + encodeURIComponent(JSON.stringify(latestOrderData));
-  const win = window.open(printUrl, "_blank");
-  setTimeout(() => {
-    if (win) win.print();
-  }, 3000);
-}
-</script>
   </div>
 </div>
 
@@ -246,4 +191,5 @@ function submitOrder() {
 </script>
 </body>
 </html>
+
 
