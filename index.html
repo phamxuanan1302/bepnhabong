@@ -249,24 +249,19 @@ function submitOrder() {
   const address = document.getElementById("address").value.trim();
   const note = document.getElementById("note").value.trim();
 
-  // Kiểm tra các trường bắt buộc
   if (!name || !phone || !address || cart.length === 0) {
-    alert("Vui lòng điền đầy đủ thông tin và chọn món ăn nhé!");
+    alert("Vui lòng điền đầy đủ thông tin và chọn món nhé!");
     return;
   }
-
-  // KIỂM TRA SỐ ĐIỆN THOẠI NGHIÊM NGẶT
-  if (!validatePhone(phone)) {
+  if (!/^0[35789]\d{8}$/.test(phone)) {
     document.getElementById("phoneError").style.display = "block";
-    document.getElementById("phone").style.borderColor = "#e74c3c";
     return;
   } else {
     document.getElementById("phoneError").style.display = "none";
-    document.getElementById("phone").style.borderColor = "#FFB6C1";
   }
 
   const itemsArray = cart.map(i => ({name:i.name, qty:i.qty, price:i.price}));
-  const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const total = cart.reduce((s,i) => s + i.price*i.qty, 0);
 
   const data = {
     timestamp: new Date().toLocaleString("vi-VN"),
@@ -275,18 +270,44 @@ function submitOrder() {
     itemsArray
   };
 
+  // ĐÃ BỎ mode: "no-cors" → BẮT BUỘC ĐỂ GOOGLE NHẬN DỮ LIỆU!
   fetch(WEB_APP_URL, {
-    method:"POST", mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(data)
-  }).finally(()=>{
-    document.getElementById("successMsg").style.display="block";
-    cart=[]; updateCart();
-    document.querySelectorAll("input,textarea").forEach(e=>e.value="");
-    setTimeout(()=>document.getElementById("successMsg").style.display="none",10000);
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.status === "success") {
+      // Lưu để in lại
+      window.latestOrder = res.order;
+
+      // Mở trang in đơn
+      const printUrl = WEB_APP_URL + "?print&data=" + encodeURIComponent(JSON.stringify(res.order));
+      const win = window.open(printUrl, "_blank");
+      setTimeout(() => win && win.print(), 3000);
+
+      // Thông báo + nút in lại
+      document.getElementById("successMsg").innerHTML = `
+        <strong style="color:#155724;">Đơn hàng đã gửi thành công!</strong><br>
+        Shop sẽ gọi xác nhận trong 5-10 phút nha ❤<br><br>
+        <button onclick="window.open('${printUrl}','_blank') || window.print()" 
+                style="background:#FF1493;color:white;padding:14px 35px;border:none;border-radius:50px;font-size:1.3em;font-weight:bold;cursor:pointer;">
+          IN ĐƠN HÀNG NGAY
+        </button>
+      `;
+      document.getElementById("successMsg").style.display = "block";
+      cart = []; updateCart();
+      document.querySelectorAll("input,textarea").forEach(e => e.value = "");
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Đã xảy ra lỗi, nhưng đơn có thể đã được gửi. Vui lòng kiểm tra email/Sheet!");
   });
 }
 </script>
 </body>
 </html>
+
 
